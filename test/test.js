@@ -113,3 +113,31 @@ describe('#Paramspace', function () {
         expect(p.modelsDomains['model2']).to.deep.equal([2, 3]);
     });
 });
+
+describe('#Priors', function () {
+
+    it ('should be initialized properly', function () {
+        var domain = [1,2,3];
+        var priors = new autotuner.Priors(domain);
+        expect(priors.mean).to.eql([0,0,0]);
+        expect(priors.kernel).to.eql([[1,0,0], [0,1,0], [0,0,1]]);
+    });
+
+    it ('should compute the mean', function () {
+        var domain = [1,2,3];
+        var priors = new autotuner.Priors(domain);
+        priors.commit({1:2});
+        priors.commit({1:4, 2:3});
+        expect(priors.mean).to.eql([3,3,0]);
+    });
+
+    it ('should compute the kernel', function () {
+        var domain = [1,2,3];
+        var priors = new autotuner.Priors(domain);
+        priors.commit({1:2});
+        priors.commit({1:4, 2:3});
+        console.log(priors.kernel);
+        expect(priors.kernel).to.eql(0);
+    });
+
+});

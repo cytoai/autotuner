@@ -7,14 +7,6 @@ module.exports = {
     Paramspace: require('./paramspace')
 };
 
-var domain = [1,2,3,4,5];
-var modelsDomains = {'a' : [0,1,2,3,4]};
-var mean = [0, 0, 0, 0, 3];
-var optimizer = new module.exports.Optimizer(domain, modelsDomains, mean=mean);
-optimizer.addSample(2, 1.0);
-optimizer.addSample(1, 2.0);
-optimizer.addSample(4, 2.5);
-var point = optimizer.getNextPoint();
 },{"./optimizer":626,"./paramspace":627,"mathjs":82}],2:[function(require,module,exports){
 /**
  * @license Complex.js v2.0.3 11/02/2016
@@ -60662,7 +60654,7 @@ function expectedImprovement (bestObjective, mean, std) {
 
     var gamma = math.dotDivide(math.subtract(mean, bestObjective), std);
 
-    var pdf = math.dotDivide(math.exp(math.dotDivide(math.square(gamma), 2)), math.sqrt(2) * 3.14159);
+    var pdf = math.dotDivide(math.exp(math.dotDivide(math.square(gamma), -2)), math.sqrt(2 * 3.14159));
     var cdf = math.dotDivide(math.add(math.erf(math.dotDivide(gamma, math.sqrt(2))), 1), 2);
 
     return math.dotMultiply(std, math.add(math.dotMultiply(gamma, cdf), pdf));

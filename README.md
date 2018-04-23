@@ -1,10 +1,21 @@
 # Autotuner.js
 Model selection and hyper-parameter tuning module. Uses a Bayesian optimization approach to pick most promising hyperparameters.
 
-# Installation
+# Getting Started
 
+Install the package with Node:
 ```bash
 npm install autotuner
+```
+
+To run tests:
+```bash
+npm test
+```
+
+To build the bundled `autotuner.js` script:
+```bash
+npm run-script build
 ```
 
 # Usage
@@ -32,3 +43,24 @@ while (optimizing) {
 }
 
 ```
+
+If we want to take advantage of the observed values to improve future optimization runs, we use the `Priors` helper class.
+```javascript
+var priors = new autotuner.Priors(p.domainIndices);
+
+var opt = new autotuner.Optimizer(p.domainIndices, p.modelsDomains, priors.mean, priors.kernel);
+
+while (optimizing) {
+    point = opt.getNextPoint();
+    params = p.domain[point];
+    
+    // Train a model given the params and obrain a quality metric value.
+    
+    p.addSample(point, value);
+}
+
+// Commit the observed points to the priors.
+priors.commit(p.observedValues);
+
+// Now the priors.mean and priors.kernel is updated with the observed values.
+``` 
