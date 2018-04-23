@@ -55,6 +55,22 @@ describe('#Optimizer', function () {
         var point = optimizer.getNextPoint();
         expect(point).to.equal(5);
     });
+
+    it('should take the correlated points into account when computing the next point', function () {
+        var domain = [1,2,3,4];
+        var modelsDomains = {'a' : [0,1,2,3]};
+        var kernel = [
+            [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, 1],
+            [0, 0, 1, 1]
+        ];
+        var optimizer = new autotuner.Optimizer(domain, modelsDomains, null, kernel);
+        optimizer.addSample(2, 1.0);
+        optimizer.addSample(4, 2.5);
+        var point = optimizer.getNextPoint();
+        expect(point).to.equal(3);
+    });
 });
 
 

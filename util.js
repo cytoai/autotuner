@@ -31,7 +31,7 @@ function expectedImprovement (bestObjective, mean, std) {
 
     var gamma = math.dotDivide(math.subtract(mean, bestObjective), std);
 
-    var pdf = math.dotDivide(math.exp(math.dotDivide(math.square(gamma), 2)), math.sqrt(2) * 3.14159);
+    var pdf = math.dotDivide(math.exp(math.dotDivide(math.square(gamma), -2)), math.sqrt(2 * 3.14159));
     var cdf = math.dotDivide(math.add(math.erf(math.dotDivide(gamma, math.sqrt(2))), 1), 2);
 
     return math.dotMultiply(std, math.add(math.dotMultiply(gamma, cdf), pdf));
