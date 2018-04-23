@@ -10,18 +10,60 @@ describe('#Optimizer', function () {
         var modelsDomains = {'a' : [1,2], 'b' : [3,4,5]};
         var mean = math.ones(domain.length);
         var kernel = math.ones(domain.length, domain.length);
-        var result = new autotuner.Optimizer(domain, modelsDomains, mean, kernel)
-        expect(result.domain).to.eql([1,2,3,4,5])
-        expect(result.modelsDomains['a']).to.eql([1,2])
-        expect(result.modelsDomains['b']).to.eql([3,4,5])
+        var optimizer = new autotuner.Optimizer(domain, modelsDomains, mean, kernel);
+        expect(optimizer.domain).to.eql([1,2,3,4,5])
+        expect(optimizer.modelsDomains['a']).to.eql([1,2])
+        expect(optimizer.modelsDomains['b']).to.eql([3,4,5])
+    });
+    
+    it('should be able to add a sample', function () {
+        var domain = [1,2,3,4,5];
+        var modelsDomains = {'a' : [0,1,2,3,4]};
+        var optimizer = new autotuner.Optimizer(domain, modelsDomains);
+        optimizer.addSample(2, 1.0);
+        expect(optimizer.observedValues[2]).to.equal(1.0);
+    });
+    
+    it('should compute the next point', function () {
+        var domain = [1,2,3,4,5];
+        var modelsDomains = {'a' : [0,1,2,3,4]};
+        var optimizer = new autotuner.Optimizer(domain, modelsDomains);
+        optimizer.addSample(2, 1.0);
+        var point = optimizer.getNextPoint();
+        expect(point).to.not.be.oneOf([2]);
+    });
+
+    it('should compute the next point after 3 samples', function () {
+        var domain = [1,2,3,4,5];
+        var modelsDomains = {'a' : [0,1,2,3,4]};
+        var optimizer = new autotuner.Optimizer(domain, modelsDomains);
+        optimizer.addSample(2, 1.0);
+        optimizer.addSample(1, 2.0);
+        optimizer.addSample(4, 0.5);
+        var point = optimizer.getNextPoint();
+        expect(point).to.not.be.oneOf([1,2,4]);
+    });
+
+    it('should take the mean prior into account when computing the next point', function () {
+        var domain = [1,2,3,4,5];
+        var modelsDomains = {'a' : [0,1,2,3,4]};
+        var mean = math.matrix([0, 0, 0, 0, 3]);
+        var optimizer = new autotuner.Optimizer(domain, modelsDomains, mean=mean);
+        optimizer.addSample(2, 1.0);
+        optimizer.addSample(1, 2.0);
+        optimizer.addSample(4, 2.5);
+        var point = optimizer.getNextPoint();
+        expect(point).to.equal(5);
     });
 });
 
 
+
 describe('#Paramspace', function () {
-   it ('should be initialized properly', function () {
-       var result = new autotuner.Paramspace();
-   });
+
+    it ('should be initialized properly', function () {
+        var result = new autotuner.Paramspace();
+    });
 
     it ('should expand a single parameter array', function () {
         var p = new autotuner.Paramspace();
