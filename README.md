@@ -11,10 +11,11 @@ npm install autotuner
 var autotuner = require('autotuner');
 ```
 
-Install and use the package with Bower:
+For usage within the browser, install and use the with Bower:
 ```bash
 bower install autotuner
 ```
+Or simply download the `autotuner.js` file.
 
 # Usage
 
