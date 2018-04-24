@@ -22,6 +22,7 @@ function Optimizer (domain, modelsDomains, mean=null, kernel=null, delays=null, 
     this.allSamples = math.matrix([]);
     this.allSamplesDelays = math.matrix([]);
     this.observedValues = {};
+    this.best = null;
 
     if (mean === null) {
         mean = math.zeros(this.domain.length)
@@ -54,6 +55,9 @@ Optimizer.prototype.addSample = function (point, value, delay=1.0) {
     this.allSamplesDelays = math.concat(this.allSamplesDelays, [delay]);
     this.observedValues[point] = value;
 
+    if (this.best === null || this.observedValues[this.best] < value) {
+        this.best = point;
+    }
 };
 
 
@@ -100,6 +104,8 @@ Optimizer.prototype.getNextPoint = function (excludeModels=[]) {
 
         var posteriorKernel = math.multiply(allToSampleKernel, math.multiply(sampleKernelInv, math.transpose(allToSampleKernel)));
         posteriorKernel = math.subtract(this.kernel, posteriorKernel);
+
+        this.posteriorMean = posteriorMean;
 
         var posteriorStd = math.sqrt(math.diag(posteriorKernel).reshape([domainSize, 1]));
 

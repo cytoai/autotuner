@@ -1,5 +1,5 @@
 # Autotuner.js
-Model selection and hyper-parameter tuning module. Uses a Bayesian optimization approach to pick most promising hyperparameters.
+Autotuner is a machine learning model selection and hyper-parameter tuning module. Uses a Bayesian optimization approach to pick most promising hyperparameters.
 
 # Getting Started
 
@@ -31,36 +31,48 @@ p.addModel('model2', {'param3' : [5,10,15]});
 
 Then we use the parameter space to initialize the optimizer:
 ```javascript
+// Initialize the optimizer with the parameter space.
 var opt = new autotuner.Optimizer(p.domainIndices, p.modelsDomains);
 
 while (optimizing) {
-    point = opt.getNextPoint();
-    params = p.domain[point];
+    // Take a suggestion from the optimizer.
+    var point = opt.getNextPoint();
     
-    // Train a model given the params and obrain a quality metric value.
+    // We can extract the model name and parameters.
+    var model = p.domain[point]['model'];
+    var params = p.domain[point]['params'];
     
+    // Train a model given the params and obtain a quality metric value.
+    // ...
+    
+    // Report the obtained quality metric value.
     p.addSample(point, value);
 }
 
 ```
+## Transfer learning
 
-If we want to take advantage of the observed values to improve future optimization runs, we use the `Priors` helper class.
+If we want to take advantage of the observed values from the previous optimization runs to improve our next optimization run, we need the `Priors` helper class.
 ```javascript
+// This object is created only once and kept across optimization runs.
 var priors = new autotuner.Priors(p.domainIndices);
-
+```
+We then use this class in our optimization runs as follows:
+```javascript
+// Use the mean and kernel from the Priors instance to
+// initialize the optimizer. 
 var opt = new autotuner.Optimizer(p.domainIndices, p.modelsDomains, priors.mean, priors.kernel);
 
+// Regular optimization run.
 while (optimizing) {
-    point = opt.getNextPoint();
-    params = p.domain[point];
-    
-    // Train a model given the params and obrain a quality metric value.
-    
+    var point = opt.getNextPoint();
+    var model = p.domain[point]['model'];
+    var params = p.domain[point]['params'];
+    // ...
     p.addSample(point, value);
 }
 
 // Commit the observed points to the priors.
 priors.commit(p.observedValues);
-
-// Now the priors.mean and priors.kernel is updated with the observed values.
-``` 
+```
+After commiting the observed values, the `priors.mean` and `priors.kernel` are updated with the observed values so we can use them to initialize the next optimization run.

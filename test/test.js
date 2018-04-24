@@ -127,17 +127,8 @@ describe('#Priors', function () {
         var domain = [1,2,3];
         var priors = new autotuner.Priors(domain);
         priors.commit({1:2});
-        priors.commit({1:4, 2:3});
-        expect(priors.mean).to.eql([3,3,0]);
-    });
-
-    it ('should compute the kernel', function () {
-        var domain = [1,2,3];
-        var priors = new autotuner.Priors(domain);
-        priors.commit({1:2});
-        priors.commit({1:4, 2:3});
-        console.log(priors.kernel);
-        expect(priors.kernel).to.eql(0);
+        priors.commit({1:4, 2:6});
+        expect(priors.mean).to.eql([3,6,4]);
     });
 
 });
