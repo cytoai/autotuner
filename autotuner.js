@@ -4,10 +4,33 @@ var math = require('mathjs');
 
 module.exports = {
     Optimizer: require('./optimizer'),
-    Paramspace: require('./paramspace')
+    Paramspace: require('./paramspace'),
+    Priors: require('./priors')
 };
 
-},{"./optimizer":626,"./paramspace":627,"mathjs":82}],2:[function(require,module,exports){
+/*
+var domain = [1,2,3];
+var priors = new module.exports.Priors(domain);
+priors.commit({1:2});
+priors.commit({2:4});
+priors.commit({1:4, 2:5});
+console.log(priors.kernel);
+*/
+
+/*
+var domain = [1,2,3,4,5];
+var modelsDomains = {'a' : [0,1,2,3,4]};
+var mean = math.matrix([0, 0, 0, 0, 3]);
+var optimizer = new module.exports.Optimizer(domain, modelsDomains, mean=mean);
+optimizer.addSample(2, 1.0);
+optimizer.addSample(1, 2.0);
+optimizer.addSample(4, 2.5);
+var point = optimizer.getNextPoint();
+
+console.log(optimizer.posteriorMean.toArray());
+console.log(optimizer.posteriorKernel.toArray());
+*/
+},{"./optimizer":626,"./paramspace":627,"./priors":628,"mathjs":82}],2:[function(require,module,exports){
 /**
  * @license Complex.js v2.0.3 11/02/2016
  *
@@ -60429,6 +60452,7 @@ function Optimizer (domain, modelsDomains, mean=null, kernel=null, delays=null, 
     this.allSamples = math.matrix([]);
     this.allSamplesDelays = math.matrix([]);
     this.observedValues = {};
+    this.best = null;
 
     if (mean === null) {
         mean = math.zeros(this.domain.length)
@@ -60461,6 +60485,9 @@ Optimizer.prototype.addSample = function (point, value, delay=1.0) {
     this.allSamplesDelays = math.concat(this.allSamplesDelays, [delay]);
     this.observedValues[point] = value;
 
+    if (this.best === null || this.observedValues[this.best] < value) {
+        this.best = point;
+    }
 };
 
 
@@ -60507,6 +60534,8 @@ Optimizer.prototype.getNextPoint = function (excludeModels=[]) {
 
         var posteriorKernel = math.multiply(allToSampleKernel, math.multiply(sampleKernelInv, math.transpose(allToSampleKernel)));
         posteriorKernel = math.subtract(this.kernel, posteriorKernel);
+
+        this.posteriorMean = posteriorMean;
 
         var posteriorStd = math.sqrt(math.diag(posteriorKernel).reshape([domainSize, 1]));
 
@@ -60569,7 +60598,7 @@ Optimizer.prototype.getNextPoint = function (excludeModels=[]) {
 
 
 module.exports = Optimizer;
-},{"./util":628,"deep-equal":4,"lodash/difference":70,"mathjs":82}],627:[function(require,module,exports){
+},{"./util":629,"deep-equal":4,"lodash/difference":70,"mathjs":82}],627:[function(require,module,exports){
 'use strict';
 
 function Paramspace() {
@@ -60621,6 +60650,72 @@ Paramspace.prototype.addModel = function (modelName, modelParameters) {
 
 module.exports = Paramspace;
 },{}],628:[function(require,module,exports){
+'use strict';
+
+var equal = require('deep-equal');
+var math = require('mathjs');
+
+function Priors (domain) {
+    this.domain = domain
+    this.observedValues = {}
+    for (var i=0; i < domain.length; i++) {
+        this.observedValues[domain[i]] = [];
+    }
+    this.mean = math.zeros(domain.length).toArray();
+    this.kernel = math.eye(domain.length).toArray();
+};
+
+Priors.prototype.commit = function (observedValues) {
+
+    for (var point in observedValues) {
+        this.observedValues[point].push(observedValues[point]);
+
+        // Find domain index.
+        var idx = this.domain.findIndex((x) => equal(x, point));
+
+        // Recompute the mean.
+        this.mean[idx] = math.mean(this.observedValues[point]);
+    }
+
+    // We find the points that have never been sampled and assign them with the mean taken over the whole sample set.
+    var sum = 0;
+    var count = 0;
+    for (var point in this.observedValues) {
+        if (this.observedValues[point].length > 0) {
+                sum += this.observedValues[point].reduce((a,b) => a+b);
+                count += this.observedValues[point].length;
+        }
+    }
+    for (var i = 0; i < this.domain.length; i++) {
+        if (this.observedValues[this.domain[i]].length === 0) {
+            this.mean[i] = sum / count;
+        }
+    }
+
+    // Recompute the kernel by using the standard covariance function between all observed points.
+    for (var point in observedValues) {
+        var idx = this.domain.findIndex((x) => equal(x, point));
+        for (var point2 in observedValues) {
+            if (this.observedValues[point2].length > 0){
+                var idx2 = this.domain.findIndex((x) => equal(x, point2));
+                var cov = 0.0;
+                for (var i = 0; i < this.observedValues[point].length; i++) {
+                    for (var j = 0; j < this.observedValues[point2].length; j++) {
+                        if (i <= j) {
+                            cov += (this.observedValues[point][i] - this.mean[idx]) * (this.observedValues[point2][j] - this.mean[idx2]);
+                        }
+                    }
+                }
+                cov /= (this.observedValues[point].length * this.observedValues[point2].length)
+                this.kernel[idx][idx2] = cov;
+                this.kernel[idx2][idx] = cov;
+            }
+        }
+    }
+};
+
+module.exports = Priors;
+},{"deep-equal":4,"mathjs":82}],629:[function(require,module,exports){
 'use strict';
 
 var math = require('mathjs');

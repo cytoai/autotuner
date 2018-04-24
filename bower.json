@@ -1,0 +1,22 @@
+{
+  "name": "autotuner",
+  "description": "Bayesian optimization of black-box functions.",
+  "main": "autotuner.js",
+  "authors": [
+    "Bojan Karlaš"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "hyperparameter",
+    "bayesian",
+    "optimization"
+  ],
+  "homepage": "https://github.com/cytoai/autotuner",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

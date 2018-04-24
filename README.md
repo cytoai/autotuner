@@ -3,19 +3,17 @@ Autotuner is a machine learning model selection and hyper-parameter tuning modul
 
 # Getting Started
 
-Install the package with Node:
+Install and use the package with Node:
 ```bash
 npm install autotuner
 ```
-
-To run tests:
-```bash
-npm test
+```javascript
+var autotuner = require('autotuner');
 ```
 
-To build the bundled `autotuner.js` script:
+Install and use the package with Bower:
 ```bash
-npm run-script build
+bower install autotuner
 ```
 
 # Usage
@@ -76,3 +74,23 @@ while (optimizing) {
 priors.commit(p.observedValues);
 ```
 After commiting the observed values, the `priors.mean` and `priors.kernel` are updated with the observed values so we can use them to initialize the next optimization run.
+
+
+# Development
+
+Pull and initialize:
+```bash
+git pull https://github.com/cytoai/autotuner.git
+cd autotuner
+npm install
+```
+
+To run tests:
+```bash
+npm test
+```
+
+To build the bundled `autotuner.js` script:
+```bash
+npm run-script build
+```
